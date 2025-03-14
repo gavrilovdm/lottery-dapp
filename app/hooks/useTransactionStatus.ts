@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { TransactionStatusType, OperationType, transactionStatusTimeout } from '../components/ui/TransactionStatus';
 
 interface UseTransactionStatusProps {

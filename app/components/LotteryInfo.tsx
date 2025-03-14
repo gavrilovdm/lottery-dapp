@@ -7,8 +7,8 @@ import { useAccount } from 'wagmi';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useEffect, useCallback } from 'react';
-import { RoundCreationForm, RoundDetails, RoundConfig, TransactionStatusType } from './lottery';
-import { TransactionStatus, transactionStatusTimeout } from './ui/TransactionStatus';
+import { RoundCreationForm, RoundDetails, RoundConfig } from './lottery';
+import { TransactionStatus } from './ui/TransactionStatus';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 

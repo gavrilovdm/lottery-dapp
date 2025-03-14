@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
 import { useLatestRoundId, useBuyTicket, useRound } from '../hooks/useLottery';
 import { useTokenBalance, useApproveToken } from '../hooks/useToken';
 import { useTransactionStatus } from '../hooks/useTransactionStatus';
@@ -10,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from 'lucide-react';
-import { TransactionStatus, TransactionStatusType, transactionStatusTimeout, OperationType } from './ui/TransactionStatus';
+import { TransactionStatus } from './ui/TransactionStatus';
 
 export function BuyTicket() {
   const { isConnected } = useAccount();
