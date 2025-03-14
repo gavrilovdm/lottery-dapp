@@ -11,7 +11,7 @@ This web application allows users to interact with a lottery smart contract depl
 - Purchase lottery tickets
 - Check the current lottery round status
 - View their transaction history
-- Claim winnings (if the user becomes a winner)
+- Claim winnings (connected address is one of the winners by default)
 
 ## Architecture
 
