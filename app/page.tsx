@@ -5,12 +5,9 @@ import { LotteryInfo } from './components/LotteryInfo';
 import { BuyTicket } from './components/BuyTicket';
 import { MintTokens } from './components/MintTokens';
 import { UserTickets } from './components/UserTickets';
-import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<'info' | 'buy' | 'mint' | 'tickets'>('info');
-
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="bg-muted shadow-md">
@@ -22,7 +19,7 @@ export default function Home() {
 
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8 flex justify-center">
-          <Tabs defaultValue="info" className="w-full max-w-2xl" onValueChange={(value) => setActiveTab(value as any)}>
+          <Tabs defaultValue="info" className="w-full max-w-2xl">
             <TabsList className="grid grid-cols-4 w-full">
               <TabsTrigger value="info">Information</TabsTrigger>
               <TabsTrigger value="buy">Buy ticket</TabsTrigger>

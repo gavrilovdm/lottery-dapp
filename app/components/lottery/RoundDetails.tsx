@@ -6,11 +6,10 @@ import { formatEther } from 'viem';
 import { RoundCard } from './RoundCard';
 
 interface RoundDetailsProps {
-  roundId: bigint | undefined;
   round: Round;
 }
 
-export function RoundDetails({ roundId, round }: RoundDetailsProps) {
+export function RoundDetails({ round }: RoundDetailsProps) {
   const isActive = !round.isFinished &&
     BigInt(Math.floor(Date.now() / 1000)) >= round.startTimestamp &&
     BigInt(Math.floor(Date.now() / 1000)) <= round.finishTimestamp;

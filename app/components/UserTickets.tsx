@@ -5,7 +5,7 @@ import { useAccount, usePublicClient } from 'wagmi';
 import { LOTTERY_CONTRACT_ADDRESS, lotteryAbi } from '../contracts';
 import { formatEther } from 'viem';
 import { UserTicket } from '../contracts/types';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -117,7 +117,7 @@ export function UserTickets() {
           <CardTitle>My Tickets</CardTitle>
         </CardHeader>
         <CardContent className="text-center">
-          <p className="text-muted-foreground">You don't have any tickets yet</p>
+          <p>You don&apos;t have any tickets yet</p>
         </CardContent>
       </Card>
     );

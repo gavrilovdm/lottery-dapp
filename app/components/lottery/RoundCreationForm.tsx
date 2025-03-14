@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { formatEther, parseUnits } from 'viem';
+import { formatEther } from 'viem';
 import { Loader2 } from "lucide-react";
 
 interface RoundConfig {

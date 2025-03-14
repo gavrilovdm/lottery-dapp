@@ -262,7 +262,6 @@ export function LotteryInfo() {
               {...getFinishRoundTransactionProps()}
             />
             <RoundDetails
-              roundId={latestRoundId}
               round={round}
             />
             <Button

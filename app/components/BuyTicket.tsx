@@ -15,12 +15,9 @@ export function BuyTicket() {
   const { isConnected } = useAccount();
   const { latestRoundId } = useLatestRoundId();
   const { round } = useRound(latestRoundId);
-  const { tokenBalance, isLoading: isLoadingBalance } = useTokenBalance();
+  const { tokenBalance } = useTokenBalance();
   const { buyTicket, isPending: isBuyPending, isSuccess: isBuySuccess, error: buyError } = useBuyTicket();
   const { approveToken, isPending: isApprovePending, isSuccess: isApproveSuccess, error: approveError } = useApproveToken();
-
-  const [showApproveSuccess, setShowApproveSuccess] = useState(false);
-  const [showBuySuccess, setShowBuySuccess] = useState(false);
 
   const [transactionStatus, setTransactionStatus] = useState<TransactionStatusType | null>(null);
   const [currentOperation, setCurrentOperation] = useState<OperationType>('default');
@@ -106,17 +103,14 @@ export function BuyTicket() {
   const handleApprove = () => {
     if (!round) return;
     approveToken(round.ticketPrice);
-    setShowApproveSuccess(true);
   };
 
   const handleBuyTicket = () => {
     if (!round || !latestRoundId) return;
     buyTicket(latestRoundId);
-    setShowBuySuccess(true);
   };
 
   const hasEnoughBalance = tokenBalance && tokenBalance.balance >= round.ticketPrice;
-  const hasEnoughAllowance = tokenBalance && tokenBalance.allowance >= round.ticketPrice;
 
   return (
     <Card>
@@ -149,8 +143,9 @@ export function BuyTicket() {
 
           {tokenBalance && !hasEnoughBalance && (
             <p className="text-destructive text-sm mb-2">
-              You don't have enough USDT to buy a ticket.
-              Get test tokens on the "Get USDT" tab
+              You don&apos;t have enough USDT to buy a ticket.
+              <p>Don&apos;t have enough tokens?</p>
+              <p>Click &quot;Mint Tokens&quot; to get some!</p>
             </p>
           )}
         </div>

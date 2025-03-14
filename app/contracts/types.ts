@@ -27,7 +27,17 @@ export interface TokenBalance {
 export interface LotteryEvent {
   type: 'TicketPurchased' | 'RoundCreated' | 'WinnersDeclared';
   roundId: bigint;
-  data: any;
+  data: {
+    player?: string;
+    ticketPrice?: bigint;
+    winners?: string[];
+    rewardDistribution?: bigint[];
+  };
   timestamp: bigint;
   transactionHash: string;
-} 
+}
+
+export type TransactionResponse = {
+  hash: string;
+  wait: () => Promise<{ status: number }>;
+}; 
