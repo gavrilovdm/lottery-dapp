@@ -1,6 +1,7 @@
 'use client';
 
 import { useCreateRound, useLatestRoundId, useRound, useFinishRound } from '../hooks/useLottery';
+import { useTransactionStatus } from '../hooks/useTransactionStatus';
 import { parseUnits } from 'viem';
 import { useAccount } from 'wagmi';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,15 +33,33 @@ export function LotteryInfo() {
   const { isConnected, address } = useAccount();
 
   // Local state
-  const [transactionStatus, setTransactionStatus] = useState<TransactionStatusType>(null);
   const [roundConfig] = useState<RoundConfig>(defaultRoundConfig);
-  const [isLoadingAfterTransaction, setIsLoadingAfterTransaction] = useState(false);
 
   // Function to refresh round data
   const refreshRoundData = useCallback(async () => {
     await refetchLatestRoundId();
     await refetchRound();
   }, [refetchLatestRoundId, refetchRound]);
+
+  // Use the transaction status hook for create round operation
+  const createRoundStatus = useTransactionStatus({
+    isPending: isPendingCreateRound,
+    isLoading: isLoadingCreateRound,
+    isSuccess: isSuccessCreateRound,
+    error: createRoundError,
+    operation: 'create_round',
+    onSuccess: refreshRoundData
+  });
+
+  // Use the transaction status hook for finish round operation
+  const finishRoundStatus = useTransactionStatus({
+    isPending: isPendingFinishRound,
+    isLoading: isLoadingFinishRound,
+    isSuccess: isSuccessFinishRound,
+    error: finishRoundError,
+    operation: 'finish_round',
+    onSuccess: refreshRoundData
+  });
 
   // Helper method to check if round is finishable
   const isRoundFinishable = useCallback(() => {
@@ -49,33 +68,33 @@ export function LotteryInfo() {
 
   // Helper method for getting the title
   const getCardTitle = useCallback(() => {
-    if (isLoadingAfterTransaction) {
+    if (createRoundStatus.isLoadingAfterTransaction || finishRoundStatus.isLoadingAfterTransaction) {
       return "Loading...";
     }
     if (round && !round.isFinished) {
       return `Round #${latestRoundId?.toString()}`;
     }
     return "Lottery information";
-  }, [round, latestRoundId, isLoadingAfterTransaction]);
+  }, [round, latestRoundId, createRoundStatus.isLoadingAfterTransaction, finishRoundStatus.isLoadingAfterTransaction]);
 
   // Helper methods for transaction status components
   const getFinishRoundTransactionProps = useCallback(() => {
     return {
-      status: transactionStatus,
+      status: finishRoundStatus.transactionStatus,
       hash: finishRoundHash,
       error: finishRoundError,
-      operation: "finish_round" as const
+      operation: finishRoundStatus.currentOperation
     };
-  }, [transactionStatus, finishRoundHash, finishRoundError]);
+  }, [finishRoundStatus.transactionStatus, finishRoundStatus.currentOperation, finishRoundHash, finishRoundError]);
 
   const getCreateRoundTransactionProps = useCallback(() => {
     return {
-      status: transactionStatus,
+      status: createRoundStatus.transactionStatus,
       hash: createRoundHash,
       error: createRoundError,
-      operation: "create_round" as const
+      operation: createRoundStatus.currentOperation
     };
-  }, [transactionStatus, createRoundHash, createRoundError]);
+  }, [createRoundStatus.transactionStatus, createRoundStatus.currentOperation, createRoundHash, createRoundError]);
 
   const getFinishButtonContent = useCallback(() => {
     if (isPendingFinishRound || isLoadingFinishRound) {
@@ -88,72 +107,6 @@ export function LotteryInfo() {
     }
     return 'Finish round';
   }, [isPendingFinishRound, isLoadingFinishRound]);
-
-  // Update transaction status for creating round
-  useEffect(() => {
-    if (isPendingCreateRound) {
-      setTransactionStatus('waiting_confirmation');
-    } else if (isLoadingCreateRound) {
-      setTransactionStatus('processing');
-    } else if (isSuccessCreateRound) {
-      setTransactionStatus('success');
-
-      // Set loading state while we fetch the new round data
-      setIsLoadingAfterTransaction(true);
-
-      // Refresh round data after successful creation
-      refreshRoundData().then(() => {
-        // Once we have the new data, we can stop showing the loading state
-        setIsLoadingAfterTransaction(false);
-      });
-
-      // Clear status after timeout
-      const timer = setTimeout(() => {
-        setTransactionStatus(null);
-      }, transactionStatusTimeout);
-      return () => clearTimeout(timer);
-    } else if (createRoundError) {
-      setTransactionStatus('error');
-      // Clear error status after timeout
-      const timer = setTimeout(() => {
-        setTransactionStatus(null);
-      }, transactionStatusTimeout);
-      return () => clearTimeout(timer);
-    }
-  }, [isPendingCreateRound, isLoadingCreateRound, isSuccessCreateRound, createRoundError, refreshRoundData]);
-
-  // Update transaction status for finishing round
-  useEffect(() => {
-    if (isPendingFinishRound) {
-      setTransactionStatus('waiting_confirmation');
-    } else if (isLoadingFinishRound) {
-      setTransactionStatus('processing');
-    } else if (isSuccessFinishRound) {
-      setTransactionStatus('success');
-
-      // Set loading state while we fetch the updated round data
-      setIsLoadingAfterTransaction(true);
-
-      // Refresh round data after successful finish
-      refreshRoundData().then(() => {
-        // Once we have the new data, we can stop showing the loading state
-        setIsLoadingAfterTransaction(false);
-      });
-
-      // Clear status after timeout
-      const timer = setTimeout(() => {
-        setTransactionStatus(null);
-      }, transactionStatusTimeout);
-      return () => clearTimeout(timer);
-    } else if (finishRoundError) {
-      setTransactionStatus('error');
-      // Clear error status after timeout
-      const timer = setTimeout(() => {
-        setTransactionStatus(null);
-      }, transactionStatusTimeout);
-      return () => clearTimeout(timer);
-    }
-  }, [isPendingFinishRound, isLoadingFinishRound, isSuccessFinishRound, finishRoundError, refreshRoundData]);
 
   // Periodically refresh round data
   useEffect(() => {
@@ -184,7 +137,6 @@ export function LotteryInfo() {
       );
     } catch (error) {
       console.error('Error creating round:', error);
-      setTransactionStatus('error');
     }
   }
 
@@ -206,7 +158,6 @@ export function LotteryInfo() {
         );
       } catch (error) {
         console.error('Error finishing round:', error);
-        setTransactionStatus('error');
       }
     }
   }
@@ -226,7 +177,7 @@ export function LotteryInfo() {
   }
 
   // If data is loading
-  if (isLoadingRoundId || isLoadingRound || isLoadingAfterTransaction) {
+  if (isLoadingRoundId || isLoadingRound || createRoundStatus.isLoadingAfterTransaction || finishRoundStatus.isLoadingAfterTransaction) {
     return (
       <Card>
         <CardHeader>

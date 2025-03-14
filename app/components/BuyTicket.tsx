@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useLatestRoundId, useBuyTicket, useRound } from '../hooks/useLottery';
 import { useTokenBalance, useApproveToken } from '../hooks/useToken';
+import { useTransactionStatus } from '../hooks/useTransactionStatus';
 import { formatEther } from 'viem';
 import { useAccount } from 'wagmi';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,54 +20,25 @@ export function BuyTicket() {
   const { buyTicket, isPending: isBuyPending, isSuccess: isBuySuccess, error: buyError } = useBuyTicket();
   const { approveToken, isPending: isApprovePending, isSuccess: isApproveSuccess, error: approveError } = useApproveToken();
 
-  const [transactionStatus, setTransactionStatus] = useState<TransactionStatusType | null>(null);
-  const [currentOperation, setCurrentOperation] = useState<OperationType>('default');
+  // Use the transaction status hook for approve operation
+  const approveStatus = useTransactionStatus({
+    isPending: isApprovePending,
+    isSuccess: isApproveSuccess,
+    error: approveError,
+    operation: 'approve'
+  });
 
-  useEffect(() => {
-    if (isApprovePending) {
-      setTransactionStatus('waiting_confirmation');
-      setCurrentOperation('approve');
-    } else if (isApproveSuccess) {
-      setTransactionStatus('success');
-      setCurrentOperation('approve');
-      const timer = setTimeout(() => {
-        setTransactionStatus(null);
-        setCurrentOperation('default');
-      }, transactionStatusTimeout);
-      return () => clearTimeout(timer);
-    } else if (approveError) {
-      setTransactionStatus('error');
-      setCurrentOperation('approve');
-      const timer = setTimeout(() => {
-        setTransactionStatus(null);
-        setCurrentOperation('default');
-      }, transactionStatusTimeout);
-      return () => clearTimeout(timer);
-    }
-  }, [isApprovePending, isApproveSuccess, approveError]);
+  // Use the transaction status hook for buy ticket operation
+  const buyStatus = useTransactionStatus({
+    isPending: isBuyPending,
+    isSuccess: isBuySuccess,
+    error: buyError,
+    operation: 'buy_ticket'
+  });
 
-  useEffect(() => {
-    if (isBuyPending) {
-      setTransactionStatus('waiting_confirmation');
-      setCurrentOperation('buy_ticket');
-    } else if (isBuySuccess) {
-      setTransactionStatus('success');
-      setCurrentOperation('buy_ticket');
-      const timer = setTimeout(() => {
-        setTransactionStatus(null);
-        setCurrentOperation('default');
-      }, transactionStatusTimeout);
-      return () => clearTimeout(timer);
-    } else if (buyError) {
-      setTransactionStatus('error');
-      setCurrentOperation('buy_ticket');
-      const timer = setTimeout(() => {
-        setTransactionStatus(null);
-        setCurrentOperation('default');
-      }, transactionStatusTimeout);
-      return () => clearTimeout(timer);
-    }
-  }, [isBuyPending, isBuySuccess, buyError]);
+  // Determine the current transaction state to display
+  const currentTransactionStatus = buyStatus.transactionStatus || approveStatus.transactionStatus;
+  const currentOperation = buyStatus.transactionStatus ? buyStatus.currentOperation : approveStatus.currentOperation;
 
   if (!isConnected) {
     return (
@@ -120,7 +92,7 @@ export function BuyTicket() {
           Ticket price: {round.ticketPrice ? formatEther(round.ticketPrice) : '...'} USDT
         </CardDescription>
         <TransactionStatus
-          status={transactionStatus}
+          status={currentTransactionStatus}
           operation={currentOperation}
           error={currentOperation === 'approve' ? approveError : (currentOperation === 'buy_ticket' ? buyError : undefined)}
         />
